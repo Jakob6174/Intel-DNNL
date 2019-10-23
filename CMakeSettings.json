@@ -59,7 +59,7 @@
         },
         {
           "name": "CMAKE_C_FLAGS_RELEASE",
-          "value": "/MD /O3/Ob2 /DNDEBUG /bigobj",
+          "value": "/MD /O2 /Ob2 /DNDEBUG /bigobj",
           "type": "STRING"
         },
         {
@@ -74,7 +74,7 @@
         },
         {
           "name": "CMAKE_CXX_FLAGS_RELEASE",
-          "value": "/MD /O3 /Ob2 /DNDEBUG /bigobj",
+          "value": "/MD /O2 /Ob2 /DNDEBUG /bigobj",
           "type": "STRING"
         },
         {

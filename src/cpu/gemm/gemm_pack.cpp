@@ -20,8 +20,6 @@
 
 #include "gemm_pack.hpp"
 
-#include "cpu_isa_traits.hpp"
-
 #include "gemm.hpp"
 #include "gemm_driver.hpp"
 #include "os_blas.hpp"
@@ -65,6 +63,8 @@ static inline bool use_reference_igemm() {
     return !mayiuse(avx512_core);
 }
 
+#endif
+	
 template <typename T>
 static bool is_good_ld(dim_t ld) {
     static constexpr auto align = 64 / sizeof(T);
@@ -72,7 +72,6 @@ static bool is_good_ld(dim_t ld) {
 
     return ((ld % align) == 0) && ((ld % no_align) != 0);
 }
-#endif
 
 static dnnl_status_t check_pack_get_size_input(const char *identifier,
         const char *transa, const char *transb, const int *M, const int *N,
@@ -81,10 +80,10 @@ static dnnl_status_t check_pack_get_size_input(const char *identifier,
     if (utils::any_null(identifier, transa, transb, M, N, K, lda, ldb))
         return dnnl_invalid_arguments;
 
-    bool is_transa = utils::one_of(*transa, 'T', 't');
-    bool is_transb = utils::one_of(*transb, 'T', 't');
+    const bool is_transa = utils::one_of(*transa, 'T', 't');
+    const bool is_transb = utils::one_of(*transb, 'T', 't');
 
-    bool ok = true && utils::one_of(*transa, 'T', 't', 'N', 'n')
+    const bool ok = utils::one_of(*transa, 'T', 't', 'N', 'n')
             && utils::one_of(*transb, 'T', 't', 'N', 'n')
             && utils::one_of(*identifier, 'A', 'a', 'B', 'b') && *M >= 0
             && *N >= 0 && *K >= 0 && *lda >= nstl::max(1, !is_transa ? *M : *K)
@@ -119,10 +118,10 @@ static dnnl_status_t gemm_pack_driver(const char *identifier,
     pack_type packing;
 
     if (utils::one_of(*identifier, 'a', 'A')) {
-        a = (const a_dt *)src;
+        a = static_cast<const a_dt *>(src);
         packing = pack_type::pack_a;
     } else {
-        b = (const b_dt *)src;
+        b = static_cast<const b_dt *>(src);
         packing = pack_type::pack_b;
     }
 
@@ -137,12 +136,11 @@ dnnl_status_t sgemm_pack_get_size(const char *identifier, const char *transa,
 
     if (!pack_sgemm_supported()) return dnnl_unimplemented;
 
-    dnnl_status_t result;
     *size = 0;
     if (pack) *pack = true;
 
-    result = check_pack_get_size_input(
-            identifier, transa, transb, M, N, K, lda, ldb);
+    const dnnl_status_t result = check_pack_get_size_input(
+	    identifier, transa, transb, M, N, K, lda, ldb);
     if (result != dnnl_success) return result;
 
 #if USE_MKL_PACKED_GEMM
@@ -174,18 +172,17 @@ dnnl_status_t gemm_bf16bf16f32_pack_get_size(const char *identifier,
 
     if (!pack_gemm_bf16bf16f32_supported()) return dnnl_unimplemented;
 
-    dnnl_status_t result;
     *size = 0;
     if (pack) *pack = true;
 
-    int M_s32 = (int)*M;
-    int N_s32 = (int)*N;
-    int K_s32 = (int)*K;
-    int lda_s32 = (int)*lda;
-    int ldb_s32 = (int)*ldb;
+    int M_s32 = static_cast<int>(*M);
+    int N_s32 = static_cast<int>(*N);
+    int K_s32 = static_cast<int>(*K);
+    int lda_s32 = static_cast<int>(*lda);
+    int ldb_s32 = static_cast<int>(*ldb);
 
-    result = check_pack_get_size_input(identifier, transa, transb, &M_s32,
-            &N_s32, &K_s32, &lda_s32, &ldb_s32);
+    dnnl_status_t result = check_pack_get_size_input(identifier, transa, transb, &M_s32,
+                                                     &N_s32, &K_s32, &lda_s32, &ldb_s32);
     if (result != dnnl_success) return result;
 
     float alpha = 1.0f;
@@ -201,18 +198,18 @@ dnnl_status_t gemm_bf16bf16f32_pack_get_size(const char *identifier,
     return dnnl_success;
 }
 
+bool use_reference_igemm();
+
 template <typename a_dt, typename b_dt>
 dnnl_status_t gemm_x8x8s32_pack_get_size(const char *identifier,
         const char *transa, const char *transb, const int *M, const int *N,
         const int *K, const int *lda, const int *ldb, size_t *size,
         bool *pack) {
-
-    dnnl_status_t result;
-    *size = 0;
+	*size = 0;
     if (pack) *pack = true;
 
-    result = check_pack_get_size_input(
-            identifier, transa, transb, M, N, K, lda, ldb);
+    dnnl_status_t result = check_pack_get_size_input(
+	    identifier, transa, transb, M, N, K, lda, ldb);
     if (result != dnnl_success) return result;
 
 #if USE_MKL_PACKED_GEMM
@@ -227,7 +224,7 @@ dnnl_status_t gemm_x8x8s32_pack_get_size(const char *identifier,
     }
 #endif
 
-    bool do_a = utils::one_of(*identifier, 'a', 'A');
+	const bool do_a = utils::one_of(*identifier, 'a', 'A');
     float alpha = 1.0f;
     gemm_pack_storage_shell_t shell {dnnl_get_max_threads(), do_a, !do_a};
 
@@ -276,14 +273,14 @@ dnnl_status_t sgemm_pack(const char *identifier, const char *transa,
 
     if (!pack_sgemm_supported()) return dnnl_unimplemented;
 
-    auto result = check_pack_input(
+    const auto result = check_pack_input(
             identifier, transa, transb, M, N, K, alpha, lda, ldb, src, dst);
     if (result != dnnl_success) return result;
 
 #if USE_MKL_PACKED_GEMM
-    auto cblas_id = cblas_identifier(identifier);
-    auto ld = (cblas_id == CblasAMatrix) ? *lda : *ldb;
-    auto trans = (cblas_id == CblasAMatrix) ? transa : transb;
+    const auto cblas_id = cblas_identifier(identifier);
+    const auto ld = (cblas_id == CblasAMatrix) ? *lda : *ldb;
+    const auto trans = (cblas_id == CblasAMatrix) ? transa : transb;
     cblas_sgemm_pack(CblasColMajor, cblas_id, cblas_transpose(trans), *M, *N,
             *K, *alpha, src, ld, dst);
     return dnnl_success;
@@ -303,13 +300,13 @@ dnnl_status_t gemm_bf16bf16f32_pack(const char *identifier, const char *transa,
 
     if (!pack_gemm_bf16bf16f32_supported()) return dnnl_unimplemented;
 
-    int M_s32 = (int)*M;
-    int N_s32 = (int)*N;
-    int K_s32 = (int)*K;
-    int lda_s32 = (int)*lda;
-    int ldb_s32 = (int)*ldb;
+    int M_s32 = static_cast<int>(*M);
+    int N_s32 = static_cast<int>(*N);
+    int K_s32 = static_cast<int>(*K);
+    int lda_s32 = static_cast<int>(*lda);
+    int ldb_s32 = static_cast<int>(*ldb);
 
-    auto result = check_pack_input(identifier, transa, transb, &M_s32, &N_s32,
+    const auto result = check_pack_input(identifier, transa, transb, &M_s32, &N_s32,
             &K_s32, alpha, &lda_s32, &ldb_s32, src, dst);
     if (result != dnnl_success) return result;
 
@@ -326,7 +323,7 @@ dnnl_status_t gemm_x8x8s32_pack(const char *identifier, const char *transa,
         const int *lda, const int *ldb, const void *src, void *dst) {
 
     float alpha = 1.0f; // Not used with igemm.
-    auto result = check_pack_input(
+    const auto result = check_pack_input(
             identifier, transa, transb, M, N, K, &alpha, lda, ldb, src, dst);
     if (result != dnnl_success) return result;
 
@@ -336,9 +333,9 @@ dnnl_status_t gemm_x8x8s32_pack(const char *identifier, const char *transa,
             && data_traits<b_dt>::data_type == data_type::u8;
 
     if (is_s8u8) {
-        auto cblas_id = cblas_identifier(identifier);
-        auto ld = (cblas_id == CblasAMatrix) ? *lda : *ldb;
-        auto trans = (cblas_id == CblasAMatrix) ? transa : transb;
+	    const auto cblas_id = cblas_identifier(identifier);
+	    const auto ld = (cblas_id == CblasAMatrix) ? *lda : *ldb;
+	    const auto trans = (cblas_id == CblasAMatrix) ? transa : transb;
         cblas_gemm_s8u8s32_pack(CblasColMajor, cblas_id, cblas_transpose(trans),
                 *M, *N, *K, src, ld, dst);
         return dnnl_success;
@@ -350,8 +347,8 @@ dnnl_status_t gemm_x8x8s32_pack(const char *identifier, const char *transa,
         return gemm_pack_driver<a_dt, b_dt, int32_t>(identifier, transa, transb,
                 M, N, K, &alpha, lda, ldb, src, &pack_dst, false);
     } else {
-        bool do_a = utils::one_of(*identifier, 'a', 'A');
-        bool is_trans = utils::one_of(do_a ? *transa : *transb, 't', 'T');
+	    const bool do_a = utils::one_of(*identifier, 'a', 'A');
+	    const bool is_trans = utils::one_of(do_a ? *transa : *transb, 't', 'T');
         auto ld = do_a ? *lda : *ldb;
         auto rows = do_a ? *M : *K;
         auto cols = do_a ? *K : *N;
