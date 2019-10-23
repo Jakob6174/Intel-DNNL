@@ -1,0 +1,93 @@
+﻿{
+  "configurations": [
+    {
+      "name": "Release",
+      "generator": "Visual Studio 16 2019 Win64",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\build\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "intelliSenseMode": "windows-msvc-x64",
+      "variables": [
+        {
+          "name": "_DNNL_USE_MKL",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DNNL_CPU_RUNTIME",
+          "value": "TBB",
+          "type": "STRING"
+        },
+        {
+          "name": "DNNL_GPU_RUNTIME",
+          "value": "OCL",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CONFIGURATION_TYPES",
+          "value": "Release",
+          "type": "UNINITIALIZED"
+        },
+        {
+          "name": "CMAKE_INSTALL_PREFIX",
+          "value": "C:/Shared/Visual Studio/Projects/Intel(R) DNNL/build/install/Release",
+          "type": "PATH"
+        },
+        {
+          "name": "OPENCLROOT",
+          "value": "C:/Applications/Development/Intel(R)/OpenCL/sdk",
+          "type": "STRING"
+        },
+        {
+          "name": "TBBROOT",
+          "value": "C:/Applications/Development/Intel(R)/compilers_and_libraries_2019/windows/tbb",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS_DEBUG",
+          "value": "/MDd /Zi /Ob0 /Od /RTC1 /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS",
+          "value": "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_C_FLAGS_RELEASE",
+          "value": "/MD /O3/Ob2 /DNDEBUG /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_C_FLAGS_DEBUG",
+          "value": "/MDd /Zi /Ob0 /Od /RTC1 /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_C_FLAGS",
+          "value": "/DWIN32 /D_WINDOWS /W3 /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS_RELEASE",
+          "value": "/MD /O3 /Ob2 /DNDEBUG /bigobj",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "C:/Applications/Development/Intel(R)/compilers_and_libraries_2019/windows/bin/intel64/icl.exe",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "C:/Applications/Development/Intel(R)/compilers_and_libraries_2019/windows/bin/intel64/icl.exe",
+          "type": "STRING"
+        }
+      ]
+    }
+  ]
+}
