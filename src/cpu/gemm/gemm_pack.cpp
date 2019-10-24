@@ -21,6 +21,7 @@
 #include "gemm_pack.hpp"
 
 #include "cpu_isa_traits.hpp"
+
 #include "gemm.hpp"
 #include "gemm_driver.hpp"
 #include "os_blas.hpp"
@@ -64,8 +65,6 @@ static inline bool use_reference_igemm() {
     return !mayiuse(avx512_core);
 }
 
-#endif
-	
 template <typename T>
 static bool is_good_ld(dim_t ld) {
     static constexpr auto align = 64 / sizeof(T);
@@ -73,6 +72,7 @@ static bool is_good_ld(dim_t ld) {
 
     return ((ld % align) == 0) && ((ld % no_align) != 0);
 }
+#endif
 
 static dnnl_status_t check_pack_get_size_input(const char *identifier,
         const char *transa, const char *transb, const int *M, const int *N,
@@ -142,7 +142,7 @@ dnnl_status_t sgemm_pack_get_size(const char *identifier, const char *transa,
     if (pack) *pack = true;
 
     result = check_pack_get_size_input(
-	    identifier, transa, transb, M, N, K, lda, ldb);
+            identifier, transa, transb, M, N, K, lda, ldb);
     if (result != dnnl_success) return result;
 
 #if USE_MKL_PACKED_GEMM
@@ -185,7 +185,7 @@ dnnl_status_t gemm_bf16bf16f32_pack_get_size(const char *identifier,
     int ldb_s32 = (int)*ldb;
 
     result = check_pack_get_size_input(identifier, transa, transb, &M_s32,
-                                                     &N_s32, &K_s32, &lda_s32, &ldb_s32);
+            &N_s32, &K_s32, &lda_s32, &ldb_s32);
     if (result != dnnl_success) return result;
 
     float alpha = 1.0f;
@@ -208,11 +208,11 @@ dnnl_status_t gemm_x8x8s32_pack_get_size(const char *identifier,
         const int *K, const int *lda, const int *ldb, size_t *size,
         bool *pack) {
     dnnl_status_t result;
-	*size = 0;
+    *size = 0;
     if (pack) *pack = true;
 
     result = check_pack_get_size_input(
-	    identifier, transa, transb, M, N, K, lda, ldb);
+            identifier, transa, transb, M, N, K, lda, ldb);
     if (result != dnnl_success) return result;
 
 #if USE_MKL_PACKED_GEMM
